@@ -1,0 +1,91 @@
+name: Windows
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**'
+      - 'examples/**'
+      - '.github/workflows/windows.yml'
+  pull_request:
+    paths:
+      - '**'
+      - 'examples/**'
+      - '.github/workflows/windows.yml'
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: write  # for actions/upload-release-asset to upload release asset
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        compiler: [msvc16]
+        bits: [32]
+        include:
+        - compiler: msvc16
+          bits: 32
+          ARCH: "x86"
+          WINDRES_ARCH: pe-x86
+
+    env:
+      RELEASE_NAME: lego-batman-hack${{ matrix.bits }}_${{ matrix.compiler }}
+      GNUTARGET: default
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    
+    - name: Setup Release Version
+      run: |
+        echo "RELEASE_NAME=hack-${{ github.event.release.tag_name }}_win${{ matrix.bits }}_${{ matrix.compiler }}" >> $GITHUB_ENV
+      shell: bash
+      if: github.event_name == 'release' && github.event.action == 'published'
+
+    - name: Setup Environment
+      run: | 
+        dir
+
+    # Setup MSBuild.exe path if required
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+      if: matrix.compiler == 'msvc16'
+
+    - name: Add msvc
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+
+    - name: Build app for release
+      run: |
+        set "vs_path=%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars32.bat"
+      
+    - name: Build Library (MSVC16 32bit)
+      run: |
+        windres.exe --version
+        build.bat
+      shell: cmd
+      if: |
+        matrix.compiler == 'msvc16' &&
+        matrix.bits == 32
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: binkw32.dll
+        path: ./binkw32.dll
+        
+    - name: Upload Artifact to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./binkw32.dll
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: github.event_name == 'release' && github.event.action == 'published'

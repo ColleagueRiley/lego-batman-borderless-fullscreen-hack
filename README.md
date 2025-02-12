@@ -28,4 +28,4 @@ Once you install MSVC (x86), run the Native Tools Command Line and run these ins
 ```sh
 cd <this directory>
 build.bat 
-```# lego-batman-borderless-fullscreen-hack
+```
