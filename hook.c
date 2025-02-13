@@ -30,14 +30,14 @@ DWORD hook(LPVOID lpThreadParameter) {
 
     /* get the monitor that the window is on (or the primary monitor) and figure out its size */
     HMONITOR src = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-	
+
     MONITORINFOEX  monitorInfo;
 
-	monitorInfo.cbSize = sizeof(MONITORINFOEX);
-	GetMonitorInfoA(src, (LPMONITORINFO)&monitorInfo);
+    monitorInfo.cbSize = sizeof(MONITORINFOEX);
+    GetMonitorInfoA(src, (LPMONITORINFO)&monitorInfo);
 
-	UINT width  = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
-	UINT height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
+    UINT width  = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
+    UINT height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
 
     /* Make Lego Batman borderless fullscreen */
     SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
