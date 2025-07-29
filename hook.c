@@ -1,8 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-int strEndsWith(const char *str, const char *suffix)
-{
+int strEndsWith(const char *str, const char *suffix) {
     if (!str || !suffix)
         return 0;
     size_t lenstr = strlen(str);
@@ -48,15 +47,15 @@ DWORD hook(LPVOID lpThreadParameter) {
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
     GetMonitorInfoA(src, (LPMONITORINFO)&monitorInfo);
 
-    UINT width  = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
-    UINT height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
+    UINT width  = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+    UINT height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
 
     LONG lStyle = GetWindowLong(hWnd, GWL_STYLE);
     lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
 
     /* Make Lego Batman borderless fullscreen */
-    SetWindowLong(hWnd, GWL_STYLE, lStyle); //WS_POPUP | WS_VISIBLE);
-    SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+    SetWindowLong(hWnd, GWL_STYLE, lStyle); // (WS_POPUP | WS_VISIBLE);
+    SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
 HMODULE hRealBink = NULL;
