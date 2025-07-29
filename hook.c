@@ -1,6 +1,18 @@
 #include <windows.h>
 #include <stdio.h>
 
+int strEndsWith(const char *str, const char *suffix)
+{
+    if (!str || !suffix)
+        return 0;
+    size_t lenstr = strlen(str);
+    size_t lensuffix = strlen(suffix);
+    if (lensuffix >  lenstr)
+        return 0;
+    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
+
 BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
     /* 
         get the window title, check if includes the words 'lego' and 'batman
@@ -11,7 +23,7 @@ BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
     char title[256];
     GetWindowTextA(hWnd, title, sizeof(title));
 
-    if (strstr(title, "LEGO") && strstr(title, "Batman") && strlen(title) == 13) {
+    if (strstr(title, "LEGO") && strEndsWith(title, "Batman")) {
         *(HWND*)lParam = hWnd;
         return FALSE;
     }
@@ -39,9 +51,12 @@ DWORD hook(LPVOID lpThreadParameter) {
     UINT width  = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
     UINT height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
 
+    LONG lStyle = GetWindowLong(hWnd, GWL_STYLE);
+    lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+
     /* Make Lego Batman borderless fullscreen */
-    SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED);
+    SetWindowLong(hWnd, GWL_STYLE, lStyle); //WS_POPUP | WS_VISIBLE);
+    SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
 HMODULE hRealBink = NULL;
