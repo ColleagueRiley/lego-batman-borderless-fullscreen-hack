@@ -1,32 +1,35 @@
 #include <windows.h>
 #include <stdio.h>
-
-int strEndsWith(const char *str, const char *suffix) {
-    if (!str || !suffix)
-        return 0;
-    size_t lenstr = strlen(str);
-    size_t lensuffix = strlen(suffix);
-    if (lensuffix >  lenstr)
-        return 0;
-    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
-}
-
+#include <assert.h>
 
 BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
-    /* 
+    /*
         get the window title, check if includes the words 'lego' and 'batman
         and ensure the size matches (in order to prevent false positives)
 
-        it's like this to avoid dealing with microsoft utf nonsense 
+        it's like this to avoid dealing with microsoft utf nonsense
     */
-    char title[256];
-    GetWindowTextA(hWnd, title, sizeof(title));
 
-    if (strstr(title, "LEGO") && strEndsWith(title, "Batman")) {
+	char prefix[] = "LEGO";
+	char suffix[] = "Batman";
+
+	char title[256];
+    int size = GetWindowTextA(hWnd, title, sizeof(title));
+	if (size <= sizeof(suffix)) return TRUE;
+
+	/* skip this case if the title does not start with the prefix 'LEGO' */
+    if (strncmp(title, prefix, sizeof(prefix) != 0)
+		return TRUE;
+
+	/* end with this case if the suffix is 'Batman' or
+	 * if the suffix 'Batman' is in the title and the title is only 13 chars long ('LEGO Batman' + reserved logo) */
+	if (strncmp(&str[size - sizeof(suffix)], suffix, sizeof(suffix)) == 0 ||
+		(strstr(title, suffix) && size == 13)
+	) {
         *(HWND*)lParam = hWnd;
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -75,7 +78,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 }
 
 
-/* 
+/*
     All the function passthrough stuff you probably don't care about
 */
 
@@ -177,7 +180,7 @@ void LoadRealBink() {
         DWORD error = GetLastError();
         char errorMsg[256];
         FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, 0, errorMsg, sizeof(errorMsg), NULL);
-        
+
         MessageBoxA(NULL, errorMsg, "Failed to Load binkw32_real.dll", MB_ICONERROR);
         exit(1);
     }
@@ -205,5 +208,5 @@ void LoadRealBink() {
     LOAD_FUNC(BinkGetFrameBuffersInfo, _BinkGetFrameBuffersInfo@8)
     LOAD_FUNC(BinkSetSoundTrack, _BinkSetSoundTrack@8)
     LOAD_FUNC(BinkSetSoundSystem, _BinkSetSoundSystem@8)
-    LOAD_FUNC(BinkOpenDirectSound, _BinkOpenDirectSound@4)                        
+    LOAD_FUNC(BinkOpenDirectSound, _BinkOpenDirectSound@4)
 }
