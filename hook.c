@@ -1,21 +1,35 @@
 #include <windows.h>
 #include <stdio.h>
+#include <assert.h>
 
 BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
-    /* 
+    /*
         get the window title, check if includes the words 'lego' and 'batman
         and ensure the size matches (in order to prevent false positives)
 
-        it's like this to avoid dealing with microsoft utf nonsense 
+        it's like this to avoid dealing with microsoft utf nonsense
     */
-    char title[256];
-    GetWindowTextA(hWnd, title, sizeof(title));
 
-    if (strstr(title, "LEGO") && strstr(title, "Batman") && strlen(title) == 13) {
+	char prefix[] = "LEGO";
+	char suffix[] = "Batman";
+
+	char title[256];
+    int size = GetWindowTextA(hWnd, title, sizeof(title));
+	if (size <= sizeof(suffix)) return TRUE;
+
+	/* skip this case if the title does not start with the prefix 'LEGO' */
+    if (strncmp(title, prefix, sizeof(prefix) != 0)
+		return TRUE;
+
+	/* end with this case if the suffix is 'Batman' or
+	 * if the suffix 'Batman' is in the title and the title is only 13 chars long ('LEGO Batman' + reserved logo) */
+	if (strncmp(&str[size - sizeof(suffix)], suffix, sizeof(suffix)) == 0 ||
+		(strstr(title, suffix) && size == 13)
+	) {
         *(HWND*)lParam = hWnd;
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -36,12 +50,15 @@ DWORD hook(LPVOID lpThreadParameter) {
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
     GetMonitorInfoA(src, (LPMONITORINFO)&monitorInfo);
 
-    UINT width  = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
-    UINT height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
+    UINT width  = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+    UINT height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+
+    LONG lStyle = GetWindowLong(hWnd, GWL_STYLE);
+    lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
 
     /* Make Lego Batman borderless fullscreen */
-    SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED);
+    SetWindowLong(hWnd, GWL_STYLE, lStyle); // (WS_POPUP | WS_VISIBLE);
+    SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
 HMODULE hRealBink = NULL;
@@ -61,7 +78,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 }
 
 
-/* 
+/*
     All the function passthrough stuff you probably don't care about
 */
 
@@ -163,7 +180,7 @@ void LoadRealBink() {
         DWORD error = GetLastError();
         char errorMsg[256];
         FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, 0, errorMsg, sizeof(errorMsg), NULL);
-        
+
         MessageBoxA(NULL, errorMsg, "Failed to Load binkw32_real.dll", MB_ICONERROR);
         exit(1);
     }
@@ -191,5 +208,5 @@ void LoadRealBink() {
     LOAD_FUNC(BinkGetFrameBuffersInfo, _BinkGetFrameBuffersInfo@8)
     LOAD_FUNC(BinkSetSoundTrack, _BinkSetSoundTrack@8)
     LOAD_FUNC(BinkSetSoundSystem, _BinkSetSoundSystem@8)
-    LOAD_FUNC(BinkOpenDirectSound, _BinkOpenDirectSound@4)                        
+    LOAD_FUNC(BinkOpenDirectSound, _BinkOpenDirectSound@4)
 }
