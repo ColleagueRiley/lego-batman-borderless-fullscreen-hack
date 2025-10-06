@@ -12,8 +12,9 @@ BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
 
 	char prefix[] = "LEGO";
 	char suffix[] = "Batman";
-
 	size_t extra_count[] = 3; /* " ", "®", "™" */
+
+	size_t length = sizeof(prefix) + sizeof(suffix) + extra_count;
 
 	char title[256];
     int size = GetWindowTextA(hWnd, title, sizeof(title));
