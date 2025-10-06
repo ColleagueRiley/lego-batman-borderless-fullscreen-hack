@@ -21,12 +21,12 @@ BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
 	if (size <= sizeof(suffix)) return TRUE;
 
 	/* skip this case if the title does not start with the prefix 'LEGO' */
-    if (strncmp(title, prefix, sizeof(prefix) != 0)
+    if (strncmp(title, prefix, sizeof(prefix)) != 0)
 		return TRUE;
 
 	/* end with this case if the suffix is 'Batman' or
 	 * if the suffix 'Batman' is in the title and the title is the same length as the max length */
-	if (strncmp(&str[size - sizeof(suffix)], suffix, sizeof(suffix)) == 0 ||
+	if (strncmp(&title[size - sizeof(suffix)], suffix, sizeof(suffix)) == 0 ||
 		(strstr(title, suffix) && size == length)
 	) {
         *(HWND*)lParam = hWnd;
