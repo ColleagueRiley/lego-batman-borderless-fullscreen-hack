@@ -12,22 +12,19 @@ BOOL CALLBACK checkWindow(HWND hWnd, LPARAM lParam) {
 
 	char prefix[] = "LEGO";
 	char suffix[] = "Batman";
-	size_t extra_count[] = 3; /* " ", "®", "™" */
-
-	size_t length = sizeof(prefix) + sizeof(suffix) + extra_count;
 
 	char title[256];
     int size = GetWindowTextA(hWnd, title, sizeof(title));
 	if (size <= sizeof(suffix)) return TRUE;
 
 	/* skip this case if the title does not start with the prefix 'LEGO' */
-    if (strncmp(title, prefix, sizeof(prefix)) != 0)
+    if (strncmp(title, prefix, sizeof(prefix) != 0)
 		return TRUE;
 
 	/* end with this case if the suffix is 'Batman' or
-	 * if the suffix 'Batman' is in the title and the title is the same length as the max length */
-	if (strncmp(&title[size - sizeof(suffix)], suffix, sizeof(suffix)) == 0 ||
-		(strstr(title, suffix) && size == length)
+	 * if the suffix 'Batman' is in the title and the title is only 13 chars long ('LEGO Batman' + reserved logo) */
+	if (strncmp(&str[size - sizeof(suffix)], suffix, sizeof(suffix)) == 0 ||
+		(strstr(title, suffix) && size == 13)
 	) {
         *(HWND*)lParam = hWnd;
         return FALSE;
